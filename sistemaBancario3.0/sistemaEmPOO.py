@@ -1,5 +1,6 @@
-from datetime import datetime
 from abc import ABC, abstractmethod
+from datetime import datetime
+
 
 class Cliente:
     def __init__(self, endereco):
@@ -8,16 +9,18 @@ class Cliente:
 
     def realizar_deposito(self, conta, transacao):
         transacao.registrar(conta)
-    
+
     def adicionar_conta(self, conta):
         self._contas.append(conta)
 
+
 class PessoaFisica(Cliente):
     def __init__(self, cpf, nome, data_nasc, endereco):
-        super().__init__(endereco) 
+        super().__init__(endereco)
         self._cpf = cpf
         self._nome = nome
         self._data_nasc = data_nasc
+
 
 class Conta:
     def __init__(self, numero, cliente):
@@ -30,27 +33,27 @@ class Conta:
     @classmethod
     def criar_conta(cls, numero, cliente):
         return cls(numero, cliente)
-    
+
     @property
     def saldo(self):
         return self._saldo
-    
+
     @property
     def numero(self):
         return self._numero
-    
+
     @property
     def agencia(self):
         return self._agencia
-    
+
     @property
     def cliente(self):
         return self._cliente
-    
+
     @property
     def historico(self):
         return self._historico
-    
+
     def sacar(self, valor):
         saldo = self._saldo
         if valor > saldo:
@@ -73,6 +76,7 @@ class Conta:
             print("Valor inválido para depósito. Tente novamente.")
             return False
 
+
 class ContaCorrente(Conta):
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
         super().__init__(numero, cliente)
@@ -82,7 +86,7 @@ class ContaCorrente(Conta):
     def sacar(self, valor):
         numero_saques = 0
         for transacao in self.historico.transacoes:
-            if isinstance(transacao, Saque): 
+            if isinstance(transacao, Saque):
                 numero_saques += 1
 
         if valor > self._saldo:
@@ -108,7 +112,8 @@ class ContaCorrente(Conta):
             Conta: {self.numero}
             Titular: {self.cliente.nome}
         """
-    
+
+
 class Historico:
     def __init__(self):
         self._transacoes = []
@@ -116,16 +121,17 @@ class Historico:
     @property
     def transacoes(self):
         return self._transacoes
-    
+
     def adicionar_transacao(self, transacao):
         self._transacoes.append(
-        {
-            "tipo": transacao.__class__.__name__,
-            "valor": transacao.valor,
-            "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        }
-    )
-        
+            {
+                "tipo": transacao.__class__.__name__,
+                "valor": transacao.valor,
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+            }
+        )
+
+
 class Transacao(ABC):
     @property
     @abstractmethod
@@ -137,6 +143,7 @@ class Transacao(ABC):
     def registrar(self, conta):
         pass
 
+
 class Saque(Transacao):
     def __init__(self, valor):
         self._valor = valor
@@ -144,12 +151,13 @@ class Saque(Transacao):
     @property
     def valor(self):
         return self._valor
-    
+
     def registrar(self, conta):
         sucesso_transacao = conta.sacar(self.valor)
-        
+
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
+
 
 class Deposito(Transacao):
     def __init__(self, valor):
@@ -158,15 +166,17 @@ class Deposito(Transacao):
     @property
     def valor(self):
         return self._valor
-    
+
     def registrar(self, conta):
         sucesso_transacao = conta.depositar(self.valor)
-        
+
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
 
+
 clientes = []
 contas = []
+
 
 def buscar_cliente_por_cpf(cpf):
     for cliente in clientes:
@@ -174,14 +184,16 @@ def buscar_cliente_por_cpf(cpf):
             return cliente
     return None
 
+
 def buscar_conta_por_cpf(cpf):
     for conta in contas:
         if conta.cliente._cpf == cpf:
             return conta
     return None
 
+
 def menu():
-    return '''
+    return """
     ======= Banco Debgital - Menu =======
     [1] Depositar
     [2] Sacar
@@ -191,7 +203,8 @@ def menu():
     [6] Listar usuários
     [7] Listar contas
     [0] Sair
-    => '''
+    => """
+
 
 while True:
     opcao = input(menu())
@@ -259,7 +272,9 @@ while True:
             else:
                 print("=== Clientes ===")
                 for c in clientes:
-                    print(f"{c._nome} - CPF: {c._cpf} - Nasc: {c._data_nasc} - Endereço: {c._endereco}")
+                    print(
+                        f"{c._nome} - CPF: {c._cpf} - Nasc: {c._data_nasc} - Endereço: {c._endereco}"
+                    )
 
         case "7":
             if not contas:
@@ -267,7 +282,9 @@ while True:
             else:
                 print("=== Contas ===")
                 for conta in contas:
-                    print(f"Agência: {conta.agencia} | Conta: {conta.numero} | Cliente: {conta.cliente._nome}")
+                    print(
+                        f"Agência: {conta.agencia} | Conta: {conta.numero} | Cliente: {conta.cliente._nome}"
+                    )
 
         case "0":
             print("Saindo...")
